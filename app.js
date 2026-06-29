@@ -12,6 +12,8 @@
  * Card order in index.html controls grid placement (earlier = top-left).
  * All per-card config is stored in localStorage as dashboard-{card-id}-{setting}.
  */
+const ACCENTS = ['#7c8dff', '#38bdf8', '#a78bfa', '#34d399', '#fb923c'];
+
 const dashboard = {
   cards: [],
 
@@ -19,7 +21,15 @@ const dashboard = {
     this.cards.push(card);
   },
 
+  _applyAccent(idx) {
+    document.documentElement.style.setProperty('--accent', ACCENTS[idx]);
+  },
+
   init() {
+    // Accent
+    const savedAccent = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
+    this._applyAccent(savedAccent);
+
     // Greeting
     const hour   = new Date().getHours();
     const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
@@ -103,8 +113,13 @@ const dashboard = {
       </div>`;
     document.body.appendChild(modal);
 
-    // Open — pre-populate from localStorage
+    // Open — cycle accent, pre-populate from localStorage
     btn.addEventListener('click', () => {
+      const cur  = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
+      const next = (cur + 1) % ACCENTS.length;
+      localStorage.setItem('dashboard-accent', next);
+      this._applyAccent(next);
+
       const weather = localStorage.getItem('dashboard-weather');
       document.getElementById('s-name').value        = localStorage.getItem('dashboard-name') || '';
       document.getElementById('s-weather').value     = weather ? (JSON.parse(weather).name || '') : '';
