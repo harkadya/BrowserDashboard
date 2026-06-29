@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
-"""Dashboard server — static files + ICS/Reddit proxies (no dependencies)."""
+"""
+Dashboard local server — two jobs:
+  1. Serve static files (index.html, style.css, app.js, cards/*.js).
+  2. Proxy requests that the browser can't make directly due to CORS or
+     TLS-fingerprinting.
+
+Proxy endpoints
+---------------
+GET /proxy/ics?url=<google-calendar-ics-url>
+    Fetches a private Google Calendar ICS feed server-side and returns it.
+    Only allows https://calendar.google.com/ URLs.
+
+GET /proxy/reddit?sub=<subreddit>
+    Fetches r/<sub>.rss via curl (not urllib — Reddit TLS-fingerprints
+    Python's urllib and returns 403; curl's TLS stack passes).
+    Parses the Atom XML and returns a clean JSON array.
+"""
 import http.server, urllib.request, urllib.parse, os, sys, subprocess, json
 import xml.etree.ElementTree as ET
 
@@ -8,6 +24,7 @@ PORT = 8080
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+
         if parsed.path == '/proxy/reddit':
             qs  = urllib.parse.parse_qs(parsed.query)
             sub = qs.get('sub', [None])[0]
@@ -15,7 +32,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(400, 'Invalid subreddit')
                 return
             try:
-                # urllib gets TLS-fingerprinted by Reddit; curl works fine
                 result = subprocess.run(
                     ['curl', '-s', '-L', '-A',
                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -44,8 +60,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(data)
             except Exception as e:
                 self.send_error(502, str(e))
+
         elif parsed.path == '/proxy/ics':
-            qs = urllib.parse.parse_qs(parsed.query)
+            qs  = urllib.parse.parse_qs(parsed.query)
             url = qs.get('url', [None])[0]
             if not url or not url.startswith('https://calendar.google.com/'):
                 self.send_error(400, 'Only Google Calendar ICS URLs allowed')
@@ -61,11 +78,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(data)
             except Exception as e:
                 self.send_error(502, str(e))
+
         else:
             super().do_GET()
 
     def log_message(self, fmt, *args):
-        pass  # quiet
+        pass  # suppress per-request logs
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))

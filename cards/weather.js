@@ -60,7 +60,8 @@ dashboard.register({
     const saved = localStorage.getItem('dashboard-weather');
     if (saved) {
       const loc = JSON.parse(saved);
-      this._fetchWeather(loc);
+      // Settings panel saves {name} only; card saves full {name,lat,lon,...}
+      loc.lat ? this._fetchWeather(loc) : this._fetch(loc.name);
     }
   },
 
