@@ -69,6 +69,94 @@ body {
 /* Size helpers for cards */
 .card--wide { grid-column: span 2; }
 .card--tall { grid-row: span 2; }
+.card--full { grid-column: 1 / -1; }
+
+/* Weather */
+.weather-form { display: flex; gap: 10px; }
+
+.weather-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 10px 14px;
+  outline: none;
+  font-family: inherit;
+}
+.weather-input:focus { border-color: var(--accent); }
+.weather-input::placeholder { color: var(--text-dim); }
+
+.weather-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.weather-loading { color: var(--text-dim); font-size: 14px; }
+.weather-error { color: #f87171; font-size: 14px; margin-bottom: 16px; }
+
+.wx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.wx-loc { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+
+.wx-temp {
+  font-size: 72px;
+  font-weight: 100;
+  letter-spacing: -3px;
+  line-height: 1;
+}
+.wx-unit { font-size: 32px; font-weight: 200; letter-spacing: 0; vertical-align: super; }
+
+.wx-desc { font-size: 16px; margin-top: 8px; }
+.wx-meta { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+
+.wx-change {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.wx-change:hover { border-color: var(--accent); color: var(--accent); }
+
+.fc {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.fc-day {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 14px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fc-name { font-size: 10px; color: var(--text-dim); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.fc-icon { font-size: 22px; }
+.fc-hi { font-size: 14px; font-weight: 500; }
+.fc-lo { font-size: 12px; color: var(--text-dim); }
 
 /* Clock */
 .clock-time {
