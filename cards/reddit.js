@@ -55,7 +55,7 @@ dashboard.register({
   },
 
   _html(sub, posts) {
-    const items = posts.map((p, i) => {
+    const items = posts.slice(0, 10).map((p, i) => {
       const ago = this._ago(new Date(p.updated));
       return `
         <div class="hn-item">

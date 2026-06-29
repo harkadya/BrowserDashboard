@@ -16,7 +16,7 @@ dashboard.register({
     const body = document.getElementById('card-body-hn');
     try {
       const { hits } = await fetch(
-        'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=12'
+        'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10'
       ).then(r => r.json());
 
       body.innerHTML = `
