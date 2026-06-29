@@ -1,7 +1,7 @@
 dashboard.register({
   id: 'clock',
   title: null,
-  className: 'card--wide',
+  className: 'card--wide card--tall',
 
   render() {
     return `

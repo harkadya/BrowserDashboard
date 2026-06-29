@@ -28,7 +28,7 @@ const WMO = {
 dashboard.register({
   id: 'weather',
   title: 'Weather',
-  className: 'card--full',
+  className: 'card--wide',
 
   render() {
     return `

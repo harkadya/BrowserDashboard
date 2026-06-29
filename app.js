@@ -30,14 +30,27 @@ const dashboard = {
     const savedAccent = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
     this._applyAccent(savedAccent);
 
-    // Greeting
+    // Greeting + header clock
     const hour   = new Date().getHours();
     const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
     const name   = localStorage.getItem('dashboard-name');
     const greetingEl = document.createElement('div');
     greetingEl.id = 'greeting';
-    greetingEl.textContent = `Good ${period}${name ? `, ${name}` : ''}`;
+    greetingEl.innerHTML = `
+      <span>${'Good ' + period + (name ? `, ${name}` : '')}</span>
+      <span id="header-clock"><span id="header-hm">--:--</span><span class="header-sec">:--</span></span>
+    `;
     document.body.insertBefore(greetingEl, document.getElementById('dashboard'));
+
+    const hmEl  = document.getElementById('header-hm');
+    const secEl = greetingEl.querySelector('.header-sec');
+    const tick  = () => {
+      const now = new Date();
+      hmEl.textContent  = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      secEl.textContent = ':' + String(now.getSeconds()).padStart(2, '0');
+    };
+    tick();
+    setInterval(tick, 1000);
 
     // Cards
     const el = document.getElementById('dashboard');

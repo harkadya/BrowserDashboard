@@ -30,7 +30,18 @@ body {
   align-self: flex-start;
   max-width: 1200px;
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
+
+#header-clock {
+  font-size: 30px;
+  font-weight: 200;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+.header-sec { color: var(--text-dim); }
 
 #dashboard {
   width: 100%;
@@ -63,21 +74,6 @@ body {
 .card--tall { grid-row: span 2; }
 .card--full { grid-column: 1 / -1; }
 
-/* Clock */
-.clock-time {
-  font-size: 80px;
-  font-weight: 200;
-  letter-spacing: -3px;
-  line-height: 1;
-}
-.clock-sec { color: var(--text-dim); }
-
-.clock-date {
-  font-size: 14px;
-  color: var(--text-dim);
-  margin-top: 10px;
-  letter-spacing: 0.02em;
-}
 
 /* Settings gear button */
 #settings-btn {
