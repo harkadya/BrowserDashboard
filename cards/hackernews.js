@@ -1,7 +1,7 @@
 dashboard.register({
   id: 'hn',
   title: 'Hacker News',
-  className: 'card--full',
+  className: 'card--wide',
 
   start() {
     this._load();
