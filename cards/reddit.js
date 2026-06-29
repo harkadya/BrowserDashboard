@@ -43,14 +43,12 @@ dashboard.register({
     const body = document.getElementById('card-body-reddit');
     body.innerHTML = `<div class="weather-loading">Loading r/${sub}…</div>`;
     try {
-      const res = await fetch(`https://www.reddit.com/r/${encodeURIComponent(sub)}/hot.json?limit=12`, {
-        headers: { Accept: 'application/json' }
-      });
+      const res = await fetch(`/proxy/reddit?sub=${encodeURIComponent(sub)}`);
       if (res.status === 404) throw new Error(`r/${sub} not found`);
       if (!res.ok) throw new Error(`Reddit error ${res.status}`);
-      const { data } = await res.json();
-      if (!data.children.length) throw new Error(`r/${sub} appears empty or private`);
-      body.innerHTML = this._html(sub, data.children);
+      const posts = await res.json();
+      if (!posts.length) throw new Error(`r/${sub} appears empty or private`);
+      body.innerHTML = this._html(sub, posts);
     } catch (err) {
       body.innerHTML = `<div class="weather-error">${err.message}</div>` + this.render();
     }
@@ -58,20 +56,16 @@ dashboard.register({
 
   _html(sub, posts) {
     const items = posts.map((p, i) => {
-      const d   = p.data;
-      const url = d.is_self ? `https://reddit.com${d.permalink}` : d.url;
-      const ago = this._ago(new Date(d.created_utc * 1000));
+      const ago = this._ago(new Date(p.updated));
       return `
         <div class="hn-item">
           <span class="hn-rank">${i + 1}</span>
           <div class="hn-body">
-            <a class="hn-title" href="${url}" target="_blank" rel="noopener">${d.title}</a>
+            <a class="hn-title" href="${p.url}" target="_blank" rel="noopener">${p.title}</a>
             <div class="hn-meta">
-              <span class="hn-domain">${d.subreddit_name_prefixed}</span>
+              <span class="hn-domain">${p.subreddit}</span>
               <span class="hn-dot">·</span>
-              <span>${d.score} pts</span>
-              <span class="hn-dot">·</span>
-              <a class="hn-comments" href="https://reddit.com${d.permalink}" target="_blank" rel="noopener">${d.num_comments} comments</a>
+              <span>${p.author}</span>
               <span class="hn-dot">·</span>
               <span>${ago}</span>
             </div>
