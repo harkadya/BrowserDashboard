@@ -165,12 +165,24 @@ body {
 
 .cal-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
 .cal-month-label { font-size: 14px; font-weight: 500; }
+
+.cal-nav {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  font-family: inherit;
+}
+.cal-nav:hover { color: var(--text); }
 
 .cal-grid {
   display: grid;
@@ -200,12 +212,21 @@ body {
 
 .cal-cell--empty { background: none; }
 
-.cal-cell:not(.cal-cell--empty) { color: var(--text); }
+.cal-cell:not(.cal-cell--empty) {
+  color: var(--text);
+  cursor: pointer;
+}
+.cal-cell:not(.cal-cell--empty):hover { background: #252840; }
 
 .cal-cell--today {
   background: var(--accent);
   color: #fff !important;
   font-weight: 600;
+}
+
+.cal-cell--selected {
+  background: #252840;
+  outline: 1px solid var(--accent);
 }
 
 .cal-dot {
