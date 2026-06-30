@@ -239,7 +239,7 @@ dashboard.register({
           const time  = e.allDay ? '' : ` · ${e.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
           return `<div class="cal-event">
             <div class="cal-event-when">${label}${time}</div>
-            <div class="cal-event-title">${e.title}</div>
+            <div class="cal-event-title">${dashboard.esc(e.title)}</div>
           </div>`;
         }).join('')
       : `<div class="cal-empty">${emptyMsg}</div>`;

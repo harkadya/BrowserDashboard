@@ -21,6 +21,15 @@ const dashboard = {
     this.cards.push(card);
   },
 
+  // Escapes text pulled from external APIs (HN/Reddit post titles, calendar
+  // event summaries, etc.) before it's inserted via innerHTML — those are
+  // attacker-controlled strings, not trusted markup.
+  esc(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  },
+
   _applyAccent(idx) {
     document.documentElement.style.setProperty('--accent', ACCENTS[idx]);
   },

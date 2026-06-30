@@ -130,7 +130,7 @@ dashboard.register({
     return `
       <div class="wx-header">
         <div>
-          <div class="wx-loc">${place}</div>
+          <div class="wx-loc">${dashboard.esc(place)}</div>
           <div class="wx-temp">${Math.round(cur.temperature_2m)}<span class="wx-unit">°C</span></div>
           <div class="wx-desc">${icon} ${desc}</div>
           <div class="wx-meta">

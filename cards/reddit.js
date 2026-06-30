@@ -61,11 +61,11 @@ dashboard.register({
         <div class="hn-item">
           <span class="hn-rank">${i + 1}</span>
           <div class="hn-body">
-            <a class="hn-title" href="${p.url}" target="_blank" rel="noopener">${p.title}</a>
+            <a class="hn-title" href="${p.url}" target="_blank" rel="noopener">${dashboard.esc(p.title)}</a>
             <div class="hn-meta">
-              <span class="hn-domain">${p.subreddit}</span>
+              <span class="hn-domain">${dashboard.esc(p.subreddit)}</span>
               <span class="hn-dot">·</span>
-              <span>${p.author}</span>
+              <span>${dashboard.esc(p.author)}</span>
               <span class="hn-dot">·</span>
               <span>${ago}</span>
             </div>
@@ -75,7 +75,7 @@ dashboard.register({
 
     return `
       <div class="news-header">
-        <span class="news-label">r/${sub} · Hot</span>
+        <span class="news-label">r/${dashboard.esc(sub)} · Hot</span>
         <button class="wx-change reddit-reset">Change</button>
       </div>
       <div class="hn-list">${items}</div>`;

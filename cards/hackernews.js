@@ -29,9 +29,9 @@ dashboard.register({
               <div class="hn-item">
                 <span class="hn-rank">${i + 1}</span>
                 <div class="hn-body">
-                  <a class="hn-title" href="${url}" target="_blank" rel="noopener">${h.title}</a>
+                  <a class="hn-title" href="${url}" target="_blank" rel="noopener">${dashboard.esc(h.title)}</a>
                   <div class="hn-meta">
-                    <span class="hn-domain">${domain}</span>
+                    <span class="hn-domain">${dashboard.esc(domain)}</span>
                     <span class="hn-dot">·</span>
                     <span>${h.points} pts</span>
                     <span class="hn-dot">·</span>

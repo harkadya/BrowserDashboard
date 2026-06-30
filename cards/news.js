@@ -72,15 +72,15 @@ dashboard.register({
     const items = articles.map(a => {
       const ago = this._ago(new Date(a.webPublicationDate));
       const trail = a.fields?.trailText
-        ? `<div class="news-trail">${a.fields.trailText.replace(/<[^>]+>/g, '')}</div>`
+        ? `<div class="news-trail">${dashboard.esc(a.fields.trailText.replace(/<[^>]+>/g, ''))}</div>`
         : '';
       return `
         <a class="news-item" href="${a.webUrl}" target="_blank" rel="noopener">
           <div class="news-meta">
-            <span class="news-section">${a.sectionName}</span>
+            <span class="news-section">${dashboard.esc(a.sectionName)}</span>
             <span class="news-age">${ago}</span>
           </div>
-          <div class="news-title">${a.webTitle}</div>
+          <div class="news-title">${dashboard.esc(a.webTitle)}</div>
           ${trail}
         </a>`;
     }).join('');

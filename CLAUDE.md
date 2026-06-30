@@ -1,8 +1,12 @@
 # BrowserDashboard
 
-A personal new-tab page served locally on macOS. Cards show weather, calendar,
-news, Hacker News, and Reddit. No build step — plain HTML/CSS/JS with a small
-Python server that handles static files and two proxy routes.
+A personal new-tab page served locally on macOS. The header shows a greeting
+and live clock; cards below show weather, calendar, news, Hacker News, and
+Reddit. No build step — plain HTML/CSS/JS with a small Python server that
+handles static files and two proxy routes.
+
+The server binds to `127.0.0.1` only (see `server.py`) — it is not reachable
+from other machines on the network.
 
 ## Running
 
@@ -50,23 +54,50 @@ dashboard.register({
 Persist user config in `localStorage` with a namespaced key:
 `dashboard-{card-id}-{setting}` (e.g. `dashboard-weather-location`).
 
+### Rendering external data
+
+Any text from an API response or ICS feed is untrusted — HN/Reddit post
+titles and calendar event summaries are written by random third parties, not
+by you. Never interpolate it into an `innerHTML` template raw. Use the
+shared `dashboard.esc(str)` helper (defined in `app.js`) for every dynamic
+field that isn't a value you constructed yourself:
+
+```js
+`<a class="hn-title" href="${url}">${dashboard.esc(h.title)}</a>`
+```
+
+Skipping this is a stored-XSS hole: a malicious post title or shared-calendar
+invite can run arbitrary JS in the page, which has the Guardian API key and
+the calendar's secret ICS URL sitting in `localStorage`.
+
+### Settings panel & accent color
+
+`app.js` also owns a settings gear (top-right, fixed) that opens a modal for
+editing every card's localStorage config in one place, and an `ACCENTS`
+array that the gear cycles through on each click (saved as
+`dashboard-accent`). New cards that add config should be wired into that
+modal's open/save handlers in `_initSettings()`.
+
 ## File structure
 
 ```
 index.html          Shell — loads CSS, app.js, card scripts, calls dashboard.init()
 style.css           Dark theme, CSS grid layout, per-card styles
-app.js              Card registry (dashboard.register / dashboard.init)
+app.js              Card registry, greeting + header clock, settings panel, esc() helper
 server.py           Python stdlib HTTP server + proxy endpoints (no pip deps)
 serve.sh            Thin wrapper: python3 server.py
 
 cards/
-  clock.js          Live clock and date — no API
   weather.js        Open-Meteo (free, no key) — saves city to localStorage
   calendar.js       Google Calendar via ICS feed — routed through /proxy/ics
   news.js           The Guardian API — key stored in localStorage
   hackernews.js     HN front page via Algolia API (free, no key)
   reddit.js         Reddit RSS via /proxy/reddit — subreddit stored in localStorage
 ```
+
+`cards/clock.js` is currently unused (the clock moved into the header in
+`app.js`) and not loaded by `index.html` — left in place pending a decision
+on whether to delete it.
 
 ## Server proxy routes
 
@@ -79,6 +110,13 @@ The Reddit proxy uses `subprocess.run(['curl', ...])` because Reddit returns
 403 to Python's `urllib` (HTTP/1.1, different TLS fingerprint) but accepts
 `curl` (HTTP/2). The RSS feed no longer includes upvote scores or comment
 counts — only title, subreddit, author, and date are available.
+
+## Secrets
+
+The Guardian API key and the calendar's ICS URL are user secrets. They live
+only in the browser's `localStorage`, set via the settings panel — never
+hardcode a key/URL in source, a card file, or this doc, and don't add a
+`.env` or config file that would hold one either.
 
 ## Card setup checklist
 

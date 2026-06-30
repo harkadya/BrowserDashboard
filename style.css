@@ -394,5 +394,4 @@ body {
 
 @media (max-width: 640px) {
   .card--wide { grid-column: span 1; }
-  .clock-time { font-size: 52px; }
 }
