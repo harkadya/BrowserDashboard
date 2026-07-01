@@ -95,10 +95,6 @@ cards/
   reddit.js         Reddit RSS via /proxy/reddit — subreddit stored in localStorage
 ```
 
-`cards/clock.js` is currently unused (the clock moved into the header in
-`app.js`) and not loaded by `index.html` — left in place pending a decision
-on whether to delete it.
-
 ## Server proxy routes
 
 | Route | Purpose | Why proxied |
