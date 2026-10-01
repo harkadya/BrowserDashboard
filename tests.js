@@ -22,4 +22,23 @@ assert.strictEqual(d.ago(now - 5 * 60e3), '5m ago');
 assert.strictEqual(d.ago(now - 3 * 3600e3), '3h ago');
 assert.strictEqual(d.ago(now - 2 * 86400e3), '2d ago');
 
+// Calendar ICS parsing: DTEND → duration, escaped SUMMARY, weekly RRULE.
+const cards = {};
+ctx.dashboard.register = c => { cards[c.id] = c; };
+vm.runInContext(fs.readFileSync(__dirname + '/cards/calendar.js', 'utf8'), ctx);
+const cal = cards.calendar;
+const t = new Date(Date.now() + 86400e3);   // tomorrow, local time
+const ymd = `${t.getFullYear()}${String(t.getMonth() + 1).padStart(2, '0')}${String(t.getDate()).padStart(2, '0')}`;
+const ics = ['BEGIN:VCALENDAR', 'BEGIN:VEVENT', `DTSTART:${ymd}T090000`, `DTEND:${ymd}T103000`,
+  'SUMMARY:Standup\\, daily', 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;COUNT=3', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+const evs = cal._parse(ics);
+assert.strictEqual(evs.length, 3);
+assert.strictEqual(evs[0].title, 'Standup, daily');
+assert.strictEqual(evs[0].dur, 90 * 60e3);
+
+assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() - 60e3), dur: 30 * 60e3 }), 'Now');
+assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 25 * 60e3 + 1e3), dur: 0 }), 'in 25m');
+assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 125 * 60e3 + 1e3), dur: 0 }), 'in 2h 5m');
+assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 5 * 3600e3), dur: 0 }), '');
+
 console.log('ok');

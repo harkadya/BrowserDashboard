@@ -35,6 +35,7 @@ dashboard.register({
         return;
       }
       localStorage.setItem('dashboard-cal-ics', url);
+      localStorage.removeItem('dashboard-cache-cal');
       this._load(url);
     });
 
@@ -58,25 +59,37 @@ dashboard.register({
       }
       if (e.target.closest('.wx-change')) {
         localStorage.removeItem('dashboard-cal-ics');
+        localStorage.removeItem('dashboard-cache-cal');
+        this._events = [];
         body.innerHTML = this.render();
       }
     });
 
     const saved = localStorage.getItem('dashboard-cal-ics');
     if (saved) this._load(saved);
+    setInterval(() => {
+      const url = localStorage.getItem('dashboard-cal-ics');
+      if (url) this._load(url, true);
+    }, 30 * 60 * 1000);
+    // keep "Now" / "in 20m" labels current
+    setInterval(() => this._events.length && this._render(), 60 * 1000);
   },
 
-  async _load(icsUrl) {
+  async _load(icsUrl, quiet = false) {
     const body = document.getElementById('card-body-calendar');
-    body.innerHTML = `<div class="weather-loading">Loading calendar…</div>`;
+    if (!quiet) body.innerHTML = dashboard.skeleton(7);
     try {
-      const res = await fetch(`/proxy/ics?url=${encodeURIComponent(icsUrl)}`);
-      if (!res.ok) throw new Error('Could not fetch calendar — is the server running? (run serve.sh)');
-      const text = await res.text();
-      if (!text.includes('BEGIN:VCALENDAR'))
-        throw new Error('That URL doesn\'t look like an ICS feed. Use the "Secret address in iCal format" from Google Calendar Settings → Integrate calendar.');
-      this._events = this._parse(text);
-      this._render();
+      await dashboard.cached('cal', 15 * 60 * 1000,
+        async () => {
+          const res = await fetch(`/proxy/ics?url=${encodeURIComponent(icsUrl)}`)
+            .catch(() => { throw new Error('Local server not reachable — start ./serve.sh'); });
+          if (!res.ok) throw new Error(`Could not fetch calendar (HTTP ${res.status})`);
+          const text = await res.text();
+          if (!text.includes('BEGIN:VCALENDAR'))
+            throw new Error('That URL doesn\'t look like an ICS feed. Use the "Secret address in iCal format" from Google Calendar Settings → Integrate calendar.');
+          return text;
+        },
+        text => { this._events = this._parse(text); this._render(); });
     } catch (err) {
       body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
     }
@@ -113,7 +126,9 @@ dashboard.register({
       if (!start) continue;
 
       const allDay = /^\d{8}$/.test(dtValue) || dtLine.includes('VALUE=DATE');
-      const title  = get('SUMMARY') || '(No title)';
+      const title  = (get('SUMMARY') || '(No title)').replace(/\\([,;\\])/g, '$1').replace(/\\n/gi, ' ');
+      const end    = this._parseDate(get('DTEND'));
+      const dur    = end ? end - start : 0;
 
       const rruleLine = block.match(/^RRULE:(.+)$/m)?.[1];
       if (rruleLine) {
@@ -123,9 +138,9 @@ dashboard.register({
             const d = this._parseDate(ds.trim());
             if (d) exdates.add(d.toDateString());
           });
-        events.push(...this._expand({ start, allDay, title }, rruleLine, exdates, winStart, winEnd));
+        events.push(...this._expand({ start, allDay, title, dur }, rruleLine, exdates, winStart, winEnd));
       } else if (start >= winStart && start <= winEnd) {
-        events.push({ start, allDay, title });
+        events.push({ start, allDay, title, dur });
       }
     }
     return events.sort((a, b) => a.start - b.start);
@@ -158,7 +173,7 @@ dashboard.register({
         for (let d = 0; d < 7; d++) {
           const day = new Date(ws.getTime() + d * DAY_MS);
           if (day < base.start) continue;
-          if (until && day > until) { count = maxCount; break; }
+          if (count >= maxCount || (until && day > until)) { count = maxCount; break; }
           if (!dayNames.includes(NAMES[day.getDay()])) continue;
           count++;
           emit(day);
@@ -185,6 +200,16 @@ dashboard.register({
       }
     }
     return results;
+  },
+
+  // 'Now' while a timed event runs, 'in 25m' / 'in 2h 5m' within 3h of start.
+  _badge(e) {
+    if (e.allDay) return '';
+    const now = Date.now(), s = e.start.getTime();
+    if (s <= now && now < s + e.dur) return 'Now';
+    const m = Math.round((s - now) / 60000);
+    if (m <= 0 || m > 180) return '';
+    return m < 60 ? `in ${m}m` : `in ${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ''}`;
   },
 
   _render() {
@@ -226,7 +251,10 @@ dashboard.register({
       eventsToShow = byDate[selKey] || [];
       emptyMsg = 'No events this day';
     } else {
-      eventsToShow = this._events.filter(e => e.start >= today).slice(0, 6);
+      const now = Date.now();
+      eventsToShow = this._events
+        .filter(e => e.start >= today && (e.allDay || e.start.getTime() + e.dur > now || e.start >= now))
+        .slice(0, 6);
       emptyMsg = 'No upcoming events';
     }
 
@@ -237,9 +265,11 @@ dashboard.register({
           const label = isTod ? 'Today' : isTom ? 'Tomorrow'
             : e.start.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
           const time  = e.allDay ? '' : ` · ${e.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
-          return `<div class="cal-event">
+          const badge = this._badge(e);
+          return `<div class="cal-event${badge === 'Now' ? ' cal-event--now' : ''}">
             <div class="cal-event-when">${label}${time}</div>
             <div class="cal-event-title">${dashboard.esc(e.title)}</div>
+            ${badge ? `<span class="cal-badge">${badge}</span>` : ''}
           </div>`;
         }).join('')
       : `<div class="cal-empty">${emptyMsg}</div>`;

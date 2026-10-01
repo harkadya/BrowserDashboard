@@ -362,6 +362,17 @@ body {
 .cal-event-when { font-size: 11px; color: var(--accent); font-weight: 600; white-space: nowrap; min-width: 90px; }
 .cal-event-title { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cal-empty { font-size: 13px; color: var(--text-dim); }
+.cal-event-title { flex: 1; min-width: 0; }
+.cal-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.cal-event--now { box-shadow: inset 2px 0 0 var(--accent); }
 
 /* Hacker News */
 .hn-list { display: flex; flex-direction: column; gap: 2px; }
