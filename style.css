@@ -462,6 +462,37 @@ kbd {
 }
 .cal-event--now { box-shadow: inset 2px 0 0 var(--accent); }
 
+/* Quick links */
+.card--links { padding: 10px; }
+.links { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 4px; }
+.link-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+.link-tile:hover { background: var(--surface-hover); transform: translateY(-2px); }
+.link-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  overflow: hidden;
+}
+.link-icon::before { content: attr(data-letter); font-weight: 700; font-size: 16px; color: var(--accent); }
+.link-icon img { position: absolute; width: 22px; height: 22px; }
+.link-icon:has(img)::before { visibility: hidden; }
+.link-name { font-size: 12px; color: var(--text-dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-tile:hover .link-name { color: var(--text); }
+
 /* Segmented tabs (HN) */
 .tabs { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 12px; background: var(--surface); border-radius: 9px; }
 .tab {

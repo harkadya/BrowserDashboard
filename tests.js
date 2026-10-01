@@ -41,4 +41,10 @@ assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 25 *
 assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 125 * 60e3 + 1e3), dur: 0 }), 'in 2h 5m');
 assert.strictEqual(cal._badge({ allDay: false, start: new Date(Date.now() + 5 * 3600e3), dur: 0 }), '');
 
+// Quick links parsing
+vm.runInContext(fs.readFileSync(__dirname + '/cards/links.js', 'utf8'), ctx);
+const links = cards.links.parse('GitHub | github.com\nhttps://www.example.org/x\nBad | javascript:alert(1)\n\n');
+assert.strictEqual(JSON.stringify(links.map(l => [l.name, l.url])),   // JSON: arrays are cross-realm
+  JSON.stringify([['GitHub', 'https://github.com/'], ['example.org', 'https://www.example.org/x']]));
+
 console.log('ok');
