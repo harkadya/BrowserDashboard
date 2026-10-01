@@ -33,13 +33,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             try:
                 result = subprocess.run(
-                    ['curl', '-s', '-L', '-A',
+                    ['curl', '-s', '-L', '-w', '\n%{http_code}', '-A',
                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
                      f'https://www.reddit.com/r/{sub}.rss'],
                     capture_output=True, timeout=15
                 )
+                body, _, code = result.stdout.rpartition(b'\n')
+                if code != b'200':
+                    # pass Reddit's status through (404 unknown sub, 429 rate limit)
+                    self.send_error(int(code) if code.isdigit() and code != b'000' else 502)
+                    return
                 ns = {'a': 'http://www.w3.org/2005/Atom'}
-                root = ET.fromstring(result.stdout)
+                root = ET.fromstring(body)
                 posts = []
                 for entry in root.findall('a:entry', ns):
                     link = entry.find('a:link', ns)

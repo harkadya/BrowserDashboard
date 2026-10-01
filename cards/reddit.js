@@ -52,7 +52,10 @@ dashboard.register({
         posts => body.innerHTML = this._html(sub, posts));
     } catch (err) {
       const msg = err.status === 404 ? `r/${sub} not found`
-                : err.status ? `Reddit error ${err.status} — is the server running?` : err.message;
+                : err.status === 429 ? 'Reddit is rate-limiting — try again in a minute'
+                : err.status ? `Reddit error ${err.status}`
+                : err instanceof TypeError ? 'Local server not reachable — start ./serve.sh'
+                : err.message;
       body.innerHTML = `<div class="weather-error">${dashboard.esc(msg)}</div>` + this.render();
     }
   },
