@@ -39,6 +39,38 @@ const dashboard = {
     } catch { return '#'; }
   },
 
+  // Stale-while-revalidate: render the last good payload instantly (new tabs
+  // open often), refetch only when older than maxAge. A failed fetch keeps
+  // the stale view on screen and only throws if there was nothing cached.
+  // ponytail: one localStorage entry per key, never pruned — keys are per
+  // card/param, so the set stays tiny; settings "Save" clears them all.
+  async cached(key, maxAge, fetcher, render) {
+    const k = `dashboard-cache-${key}`;
+    let hit = null;
+    try { hit = JSON.parse(localStorage.getItem(k)); } catch {}
+    if (hit) render(hit.data);
+    if (hit && Date.now() - hit.t < maxAge) return;
+    try {
+      const data = await fetcher();
+      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), data })); } catch {} // quota
+      render(data);
+    } catch (err) {
+      if (!hit) throw err;
+    }
+  },
+
+  // fetch() that throws on non-2xx, with the status on the error.
+  async fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+    return res.json();
+  },
+
+  // Shimmering placeholder lines shown while a card's first fetch runs.
+  skeleton(lines = 4) {
+    return `<div class="skeleton" aria-busy="true">${'<div class="skeleton-line"></div>'.repeat(lines)}</div>`;
+  },
+
   // "5m ago" / "3h ago" / "2d ago"
   ago(date) {
     const m = Math.floor((Date.now() - date) / 60000);
