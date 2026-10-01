@@ -185,26 +185,26 @@ kbd {
 }
 #settings-btn:hover { opacity: 1; }
 
-/* Settings modal */
+/* Settings modal (native <dialog>) */
 #settings-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(6px);
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  width: min(480px, calc(100% - 32px));
+  max-height: 90vh;
 }
-#settings-modal.open { display: flex; }
+#settings-modal::backdrop { background: rgb(0 0 0 / 0.5); backdrop-filter: blur(6px); }
+#settings-modal[open] { animation: card-in 0.25s ease-out; }
 
 .settings-panel {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.35);
   padding: 28px;
   width: 100%;
-  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
   display: flex;
@@ -249,6 +249,27 @@ kbd {
 .settings-field label { font-size: 13px; font-weight: 500; }
 .settings-field small { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
 .settings-optional { font-weight: 400; color: var(--text-dim); }
+.settings-field-row { display: flex; gap: 10px; }
+.settings-field textarea { resize: vertical; font-size: 13px; line-height: 1.5; font-family: ui-monospace, Menlo, monospace; }
+.settings-field select { appearance: none; cursor: pointer; }
+.settings-hint { font-size: 11px; color: var(--text-dim); text-align: center; }
+#settings-save { width: 100%; margin-top: 8px; }
+
+/* Segmented control */
+.seg { display: flex; gap: 2px; padding: 3px; background: var(--surface); border-radius: 10px; }
+.seg button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.seg button.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); }
 
 /* Accent swatches in settings */
 .accent-swatches { display: flex; gap: 8px; }
@@ -261,7 +282,7 @@ kbd {
   transition: transform 0.15s, border-color 0.15s;
 }
 .accent-swatch:hover { transform: scale(1.15); }
-.accent-swatch.active { border-color: rgb(var(--ink) / 0.5); }
+.accent-swatch.active { border-color: var(--card-bg); box-shadow: 0 0 0 2px var(--text); }
 
 /* Forms */
 .weather-form { display: flex; gap: 10px; }

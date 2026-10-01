@@ -129,7 +129,7 @@ const dashboard = {
       const now = new Date(), h = now.getHours();
       const period = h < 5 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
       textEl.textContent = `Good ${period}${name ? `, ${name}` : ''}`;
-      dateEl.textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+      dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
       hmEl.textContent   = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       secEl.textContent  = ':' + String(now.getSeconds()).padStart(2, '0');
     };
@@ -159,111 +159,158 @@ const dashboard = {
   },
 
   _initSettings() {
+    const ls = localStorage;
+
     // Gear button
     const btn = document.createElement('button');
     btn.id = 'settings-btn';
-    btn.title = 'Settings';
+    btn.title = 'Settings ( , )';
+    btn.setAttribute('aria-label', 'Settings');
     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"/>
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>`;
     document.body.appendChild(btn);
 
-    // Modal
-    const modal = document.createElement('div');
+    const opts = (map, cur) => Object.entries(map)
+      .map(([v, label]) => `<option value="${v}"${v === cur ? ' selected' : ''}>${label}</option>`).join('');
+
+    // Modal — native <dialog> gives Esc-to-close and focus trapping for free
+    const modal = document.createElement('dialog');
     modal.id = 'settings-modal';
     modal.innerHTML = `
-      <div class="settings-panel">
+      <form class="settings-panel">
         <div class="settings-header">
           <span>Settings</span>
-          <button id="settings-close">✕</button>
+          <button id="settings-close" type="button" aria-label="Close">✕</button>
         </div>
 
+        <div class="settings-section-title">Appearance</div>
         <div class="settings-field">
-          <label>Your name</label>
+          <label>Theme</label>
+          <div class="seg" id="s-theme">
+            ${['dark', 'light', 'auto'].map(t => `<button type="button" data-theme-opt="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}
+          </div>
+        </div>
+        <div class="settings-field">
+          <label>Accent</label>
+          <div class="accent-swatches">
+            ${ACCENTS.map((c, i) => `<button type="button" class="accent-swatch" data-accent="${i}" style="background:${c}" aria-label="Accent ${c}"></button>`).join('')}
+          </div>
+        </div>
+
+        <div class="settings-section-title">General</div>
+        <div class="settings-field">
+          <label for="s-name">Your name</label>
           <input id="s-name" class="weather-input" type="text" placeholder="e.g. João">
+        </div>
+        <div class="settings-field">
+          <label for="s-engine">Search engine</label>
+          <select id="s-engine" class="weather-input">
+            ${opts(Object.fromEntries(Object.entries(SEARCH_ENGINES).map(([k, e]) => [k, e.name])), ls.getItem('dashboard-search-engine') || 'google')}
+          </select>
+        </div>
+        <div class="settings-field">
+          <label for="s-links">Quick links <span class="settings-optional">— one per line: Name | url</span></label>
+          <textarea id="s-links" class="weather-input" rows="5" spellcheck="false"></textarea>
+          <small>Clear the box to hide the links row.</small>
         </div>
 
         <div class="settings-section-title">Weather</div>
-        <div class="settings-field">
-          <label>City</label>
-          <input id="s-weather" class="weather-input" type="text" placeholder="e.g. Lisbon">
+        <div class="settings-field-row">
+          <div class="settings-field" style="flex:2">
+            <label for="s-weather">City</label>
+            <input id="s-weather" class="weather-input" type="text" placeholder="e.g. Lisbon">
+          </div>
+          <div class="settings-field" style="flex:1">
+            <label for="s-units">Units</label>
+            <select id="s-units" class="weather-input">${opts({ c: '°C, km/h', f: '°F, mph' }, ls.getItem('dashboard-weather-units') || 'c')}</select>
+          </div>
         </div>
 
         <div class="settings-section-title">Calendar</div>
         <div class="settings-field">
-          <label>Google Calendar ICS URL</label>
+          <label for="s-cal">Google Calendar ICS URL</label>
           <input id="s-cal" class="weather-input" type="url" placeholder="https://calendar.google.com/calendar/ical/…">
           <small>Calendar Settings → Integrate calendar → "Secret address in iCal format"</small>
         </div>
 
         <div class="settings-section-title">News</div>
         <div class="settings-field">
-          <label>Guardian API key</label>
-          <input id="s-news-key" class="weather-input" type="text" placeholder="Your key — open.platform.theguardian.com">
+          <label for="s-news-key">Guardian API key</label>
+          <input id="s-news-key" class="weather-input" type="password" placeholder="Your key — open.platform.theguardian.com" autocomplete="off">
         </div>
         <div class="settings-field">
-          <label>Guardian section <span class="settings-optional">(optional)</span></label>
+          <label for="s-news-section">Guardian section <span class="settings-optional">(optional)</span></label>
           <input id="s-news-section" class="weather-input" type="text" placeholder="e.g. technology, world — blank = top stories">
         </div>
 
         <div class="settings-section-title">Reddit</div>
         <div class="settings-field">
-          <label>Subreddit</label>
+          <label for="s-reddit">Subreddit</label>
           <input id="s-reddit" class="weather-input" type="text" placeholder="popular">
         </div>
 
-        <button id="settings-save" class="weather-btn" style="width:100%;margin-top:8px">Save & reload</button>
-      </div>`;
+        <button id="settings-save" type="submit" class="weather-btn">Save &amp; reload</button>
+        <small class="settings-hint">Shortcuts: <kbd>/</kbd> search · <kbd>,</kbd> settings · <kbd>Esc</kbd> close</small>
+      </form>`;
     document.body.appendChild(modal);
+    const $ = id => modal.querySelector('#' + id);
 
-    // Open — cycle accent, pre-populate from localStorage
-    btn.addEventListener('click', () => {
-      const cur  = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
-      const next = (cur + 1) % ACCENTS.length;
-      localStorage.setItem('dashboard-accent', next);
-      this.applyPrefs();
-
-      const weather = localStorage.getItem('dashboard-weather');
-      document.getElementById('s-name').value        = localStorage.getItem('dashboard-name') || '';
-      document.getElementById('s-weather').value     = weather ? (JSON.parse(weather).name || '') : '';
-      document.getElementById('s-cal').value         = localStorage.getItem('dashboard-cal-ics') || '';
-      document.getElementById('s-news-key').value    = localStorage.getItem('dashboard-news-key') || '';
-      document.getElementById('s-news-section').value= localStorage.getItem('dashboard-news-section') || '';
-      document.getElementById('s-reddit').value      = localStorage.getItem('dashboard-reddit-sub') || '';
-      modal.classList.add('open');
-      document.getElementById('s-name').focus();
+    // Appearance applies (and saves) immediately
+    const markAppearance = () => {
+      const theme = ls.getItem('dashboard-theme') || 'dark';
+      const acc   = ls.getItem('dashboard-accent') || '0';
+      modal.querySelectorAll('[data-theme-opt]').forEach(b => b.classList.toggle('active', b.dataset.themeOpt === theme));
+      modal.querySelectorAll('[data-accent]').forEach(b => b.classList.toggle('active', b.dataset.accent === acc));
+    };
+    modal.addEventListener('click', e => {
+      const t = e.target.closest('[data-theme-opt]')?.dataset.themeOpt;
+      const a = e.target.closest('[data-accent]')?.dataset.accent;
+      if (t) ls.setItem('dashboard-theme', t);
+      if (a) ls.setItem('dashboard-accent', a);
+      if (t || a) { this.applyPrefs(); markAppearance(); }
+      if (e.target === modal || e.target.closest('#settings-close')) modal.close();   // ✕ or backdrop
     });
 
-    // Close
-    const close = () => modal.classList.remove('open');
-    document.getElementById('settings-close').addEventListener('click', close);
-    modal.addEventListener('click', e => { if (e.target === modal) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    // Open — pre-populate from localStorage
+    btn.addEventListener('click', () => {
+      const weather = ls.getItem('dashboard-weather');
+      let city = '';
+      try { city = weather ? JSON.parse(weather).name || '' : ''; } catch {}
+      $('s-name').value         = ls.getItem('dashboard-name') || '';
+      $('s-weather').value      = city;
+      $('s-links').value        = ls.getItem('dashboard-links') ?? DEFAULT_LINKS;
+      $('s-cal').value          = ls.getItem('dashboard-cal-ics') || '';
+      $('s-news-key').value     = ls.getItem('dashboard-news-key') || '';
+      $('s-news-section').value = ls.getItem('dashboard-news-section') || '';
+      $('s-reddit').value       = ls.getItem('dashboard-reddit-sub') || '';
+      markAppearance();
+      modal.showModal();
+    });
 
-    // Save → persist to localStorage, reload page
-    document.getElementById('settings-save').addEventListener('click', () => {
-      const set = (key, val) => val
-        ? localStorage.setItem(key, val)
-        : localStorage.removeItem(key);
+    // Save → persist, drop cached API data (config may have changed), reload
+    modal.querySelector('form').addEventListener('submit', e => {
+      e.preventDefault();
+      const set = (key, val) => val ? ls.setItem(key, val) : ls.removeItem(key);
+      const val = id => $(id).value.trim();
 
-      const name    = document.getElementById('s-name').value.trim();
-      const weather = document.getElementById('s-weather').value.trim();
-      const cal     = document.getElementById('s-cal').value.trim();
-      const newsKey = document.getElementById('s-news-key').value.trim();
-      const newsSec = document.getElementById('s-news-section').value.trim();
-      const reddit  = document.getElementById('s-reddit').value.trim();
-
-      set('dashboard-name', name);
+      set('dashboard-name', val('s-name'));
+      set('dashboard-search-engine', val('s-engine'));
+      ls.setItem('dashboard-links', val('s-links'));
+      set('dashboard-weather-units', val('s-units') === 'f' ? 'f' : '');
       // Save city name only; weather card will geocode on next load
-      weather
-        ? localStorage.setItem('dashboard-weather', JSON.stringify({ name: weather }))
-        : localStorage.removeItem('dashboard-weather');
-      set('dashboard-cal-ics', cal);
-      set('dashboard-news-key', newsKey);
-      localStorage.setItem('dashboard-news-section', newsSec);
-      localStorage.setItem('dashboard-reddit-sub', reddit || 'popular');
+      const city = val('s-weather');
+      let prev = '';
+      try { prev = JSON.parse(ls.getItem('dashboard-weather'))?.name || ''; } catch {}
+      if (!city) ls.removeItem('dashboard-weather');
+      else if (city !== prev) ls.setItem('dashboard-weather', JSON.stringify({ name: city }));
+      set('dashboard-cal-ics', val('s-cal'));
+      set('dashboard-news-key', val('s-news-key'));
+      ls.setItem('dashboard-news-section', val('s-news-section'));
+      ls.setItem('dashboard-reddit-sub', val('s-reddit').replace(/^r\//, '') || 'popular');
 
+      Object.keys(ls).filter(k => k.startsWith('dashboard-cache-')).forEach(k => ls.removeItem(k));
       location.reload();
     });
   }
