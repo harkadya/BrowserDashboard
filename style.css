@@ -604,7 +604,18 @@ kbd {
 /* News */
 .news-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .news-label { font-size: 13px; font-weight: 500; color: var(--text-dim); }
-.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px; }
+.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px; }
+.news-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: var(--surface);
+  transition: opacity 0.2s;
+}
+.news-item:hover .news-thumb { opacity: 0.85; }
 .news-item {
   display: block;
   padding: 12px;

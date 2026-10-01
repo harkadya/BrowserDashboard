@@ -81,6 +81,9 @@ dashboard.register({
         : '';
       return `
         <a class="news-item" href="${dashboard.url(a.webUrl)}" target="_blank" rel="noopener">
+          ${a.fields?.thumbnail
+            ? `<img class="news-thumb" src="${dashboard.url(a.fields.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">`
+            : ''}
           <div class="news-meta">
             <span class="news-section">${dashboard.esc(a.sectionName)}</span>
             <span class="news-age">${ago}</span>
