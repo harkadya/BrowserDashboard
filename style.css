@@ -231,7 +231,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .wx-loc { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
 .wx-temp { font-size: 72px; font-weight: 100; letter-spacing: -3px; line-height: 1; }
@@ -272,6 +272,18 @@ body {
 .fc-icon { font-size: 22px; }
 .fc-hi { font-size: 14px; font-weight: 500; }
 .fc-lo { font-size: 12px; color: var(--text-dim); }
+.fc-pop { font-size: 10px; color: var(--text-dim); }
+.fc-day--today { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* Weather hourly strip */
+.hr { position: relative; margin-bottom: 20px; }
+.hr-line { position: absolute; left: 0; top: 0; width: 100%; height: 30px; opacity: 0.7; }
+.hr-cells { display: grid; padding-top: 34px; }
+.hr-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hr-temp { font-size: 12px; font-weight: 500; }
+.hr-icon { font-size: 15px; }
+.hr-pop  { font-size: 10px; color: var(--accent); min-height: 12px; }
+.hr-time { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
 /* Calendar */
 .cal-setup { display: flex; flex-direction: column; }
