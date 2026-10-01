@@ -374,6 +374,22 @@ body {
 }
 .cal-event--now { box-shadow: inset 2px 0 0 var(--accent); }
 
+/* Segmented tabs (HN) */
+.tabs { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 12px; background: var(--surface); border-radius: 9px; }
+.tab {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font: 600 12px/1 inherit;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab--active { background: var(--surface-hover); color: var(--text); }
+
 /* Hacker News */
 .hn-list { display: flex; flex-direction: column; gap: 2px; }
 .hn-item {
