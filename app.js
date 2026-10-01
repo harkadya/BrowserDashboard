@@ -12,7 +12,7 @@
  * Card order in index.html controls grid placement (earlier = top-left).
  * All per-card config is stored in localStorage as dashboard-{card-id}-{setting}.
  */
-const ACCENTS = ['#7c8dff', '#38bdf8', '#a78bfa', '#34d399', '#fb923c'];
+const ACCENTS = ['#7c8dff', '#38bdf8', '#a78bfa', '#34d399', '#fb923c', '#f472b6', '#facc15'];
 
 const dashboard = {
   cards: [],
@@ -80,15 +80,17 @@ const dashboard = {
     return `${Math.floor(m / 1440)}d ago`;
   },
 
-  _applyAccent(idx) {
-    document.documentElement.style.setProperty('--accent', ACCENTS[idx]);
+  // Theme + accent. Runs as soon as app.js loads (it's in <head>) so the
+  // page never flashes the wrong colors. Theme: 'dark' (default) | 'light' | 'auto'.
+  applyPrefs() {
+    const root  = document.documentElement;
+    const theme = localStorage.getItem('dashboard-theme') || 'dark';
+    theme === 'auto' ? delete root.dataset.theme : root.dataset.theme = theme;
+    const idx = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
+    root.style.setProperty('--accent', ACCENTS[idx] ?? ACCENTS[0]);
   },
 
   init() {
-    // Accent
-    const savedAccent = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
-    this._applyAccent(savedAccent);
-
     // Greeting + header clock
     const hour   = new Date().getHours();
     const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
@@ -113,8 +115,8 @@ const dashboard = {
 
     // Cards
     const el = document.getElementById('dashboard');
-    el.innerHTML = this.cards.map(c => `
-      <div class="card${c.className ? ' ' + c.className : ''}" id="card-${c.id}">
+    el.innerHTML = this.cards.map((c, i) => `
+      <div class="card${c.className ? ' ' + c.className : ''}" id="card-${c.id}" style="--i:${i}">
         ${c.title ? `<div class="card-title">${c.title}</div>` : ''}
         <div id="card-body-${c.id}">${c.render()}</div>
       </div>
@@ -190,7 +192,7 @@ const dashboard = {
       const cur  = parseInt(localStorage.getItem('dashboard-accent') ?? '0', 10);
       const next = (cur + 1) % ACCENTS.length;
       localStorage.setItem('dashboard-accent', next);
-      this._applyAccent(next);
+      this.applyPrefs();
 
       const weather = localStorage.getItem('dashboard-weather');
       document.getElementById('s-name').value        = localStorage.getItem('dashboard-name') || '';
@@ -236,3 +238,5 @@ const dashboard = {
     });
   }
 };
+
+if (typeof document !== 'undefined') dashboard.applyPrefs();
