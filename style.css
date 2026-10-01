@@ -57,17 +57,56 @@ body {
 ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
 
 #greeting {
-  font-size: 22px;
-  font-weight: 300;
-  color: var(--text-dim);
-  letter-spacing: 0.01em;
-  align-self: flex-start;
   max-width: 1200px;
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-end;
+  gap: 16px;
 }
+#greet-text { font-size: 26px; font-weight: 300; letter-spacing: -0.01em; }
+#greet-date { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+#search {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  color: var(--text-dim);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: var(--card-shadow), 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+#search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  padding: 14px 0;
+}
+#search input::placeholder { color: var(--text-dim); }
+#search input::-webkit-search-cancel-button { display: none; }
+kbd {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-dim);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+#search:focus-within kbd { visibility: hidden; }
 
 #header-clock {
   font-variant-numeric: tabular-nums;

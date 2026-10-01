@@ -14,6 +14,13 @@
  */
 const ACCENTS = ['#7c8dff', '#38bdf8', '#a78bfa', '#34d399', '#fb923c', '#f472b6', '#facc15'];
 
+const SEARCH_ENGINES = {
+  google: { name: 'Google',     url: 'https://www.google.com/search' },
+  ddg:    { name: 'DuckDuckGo', url: 'https://duckduckgo.com/' },
+  kagi:   { name: 'Kagi',       url: 'https://kagi.com/search' },
+  bing:   { name: 'Bing',       url: 'https://www.bing.com/search' },
+};
+
 const dashboard = {
   cards: [],
 
@@ -91,27 +98,50 @@ const dashboard = {
   },
 
   init() {
-    // Greeting + header clock
-    const hour   = new Date().getHours();
-    const period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-    const name   = localStorage.getItem('dashboard-name');
-    const greetingEl = document.createElement('div');
-    greetingEl.id = 'greeting';
-    greetingEl.innerHTML = `
-      <span>${'Good ' + period + (name ? `, ${this.esc(name)}` : '')}</span>
-      <span id="header-clock"><span id="header-hm">--:--</span><span class="header-sec">:--</span></span>
-    `;
-    document.body.insertBefore(greetingEl, document.getElementById('dashboard'));
+    // Greeting, date, clock, search
+    const name    = localStorage.getItem('dashboard-name');
+    const engine  = SEARCH_ENGINES[localStorage.getItem('dashboard-search-engine')] ?? SEARCH_ENGINES.google;
+    const header  = document.createElement('header');
+    header.id = 'greeting';
+    header.innerHTML = `
+      <div>
+        <div id="greet-text"></div>
+        <div id="greet-date"></div>
+      </div>
+      <span id="header-clock"><span id="header-hm">--:--</span><span class="header-sec">:--</span></span>`;
+    const search = document.createElement('form');
+    search.id = 'search';
+    search.role = 'search';
+    search.action = engine.url;
+    search.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input name="q" type="search" placeholder="Search ${engine.name}…" autocomplete="off" aria-label="Search ${engine.name}" autofocus>
+      <kbd>/</kbd>`;
+    const main = document.getElementById('dashboard');
+    document.body.insertBefore(header, main);
+    document.body.insertBefore(search, main);
 
-    const hmEl  = document.getElementById('header-hm');
-    const secEl = greetingEl.querySelector('.header-sec');
-    const tick  = () => {
-      const now = new Date();
-      hmEl.textContent  = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      secEl.textContent = ':' + String(now.getSeconds()).padStart(2, '0');
+    const hmEl   = document.getElementById('header-hm');
+    const secEl  = header.querySelector('.header-sec');
+    const textEl = document.getElementById('greet-text');
+    const dateEl = document.getElementById('greet-date');
+    const tick   = () => {
+      const now = new Date(), h = now.getHours();
+      const period = h < 5 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+      textEl.textContent = `Good ${period}${name ? `, ${name}` : ''}`;
+      dateEl.textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+      hmEl.textContent   = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      secEl.textContent  = ':' + String(now.getSeconds()).padStart(2, '0');
     };
     tick();
     setInterval(tick, 1000);
+
+    // Shortcuts: "/" focuses search, "," opens settings (ignored while typing)
+    document.addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, select')) return;
+      if (e.key === '/') { e.preventDefault(); search.q.focus(); }
+      if (e.key === ',') { e.preventDefault(); document.getElementById('settings-btn').click(); }
+    });
 
     // Cards
     const el = document.getElementById('dashboard');
