@@ -41,7 +41,7 @@ dashboard.register({
 
   async _load(sub) {
     const body = document.getElementById('card-body-reddit');
-    body.innerHTML = `<div class="weather-loading">Loading r/${sub}…</div>`;
+    body.innerHTML = `<div class="weather-loading">Loading r/${dashboard.esc(sub)}…</div>`;
     try {
       const res = await fetch(`/proxy/reddit?sub=${encodeURIComponent(sub)}`);
       if (res.status === 404) throw new Error(`r/${sub} not found`);
@@ -50,18 +50,18 @@ dashboard.register({
       if (!posts.length) throw new Error(`r/${sub} appears empty or private`);
       body.innerHTML = this._html(sub, posts);
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${err.message}</div>` + this.render();
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
     }
   },
 
   _html(sub, posts) {
     const items = posts.slice(0, 10).map((p, i) => {
-      const ago = this._ago(new Date(p.updated));
+      const ago = dashboard.ago(new Date(p.updated));
       return `
         <div class="hn-item">
           <span class="hn-rank">${i + 1}</span>
           <div class="hn-body">
-            <a class="hn-title" href="${p.url}" target="_blank" rel="noopener">${dashboard.esc(p.title)}</a>
+            <a class="hn-title" href="${dashboard.url(p.url)}" target="_blank" rel="noopener">${dashboard.esc(p.title)}</a>
             <div class="hn-meta">
               <span class="hn-domain">${dashboard.esc(p.subreddit)}</span>
               <span class="hn-dot">·</span>
@@ -79,12 +79,5 @@ dashboard.register({
         <button class="wx-change reddit-reset">Change</button>
       </div>
       <div class="hn-list">${items}</div>`;
-  },
-
-  _ago(date) {
-    const m = Math.floor((Date.now() - date) / 60000);
-    if (m < 60)   return `${m}m ago`;
-    if (m < 1440) return `${Math.floor(m / 60)}h ago`;
-    return `${Math.floor(m / 1440)}d ago`;
   }
 });

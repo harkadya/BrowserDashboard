@@ -67,7 +67,7 @@ dashboard.register({
 
   async _fetch(city) {
     const body = document.getElementById('card-body-weather');
-    body.innerHTML = `<div class="weather-loading">Searching for "${city}"…</div>`;
+    body.innerHTML = `<div class="weather-loading">Searching for "${dashboard.esc(city)}"…</div>`;
     try {
       const geo = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
@@ -85,13 +85,13 @@ dashboard.register({
       localStorage.setItem('dashboard-weather', JSON.stringify(loc));
       await this._fetchWeather(loc);
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${err.message}</div>` + this.render();
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
     }
   },
 
   async _fetchWeather(loc) {
     const body = document.getElementById('card-body-weather');
-    body.innerHTML = `<div class="weather-loading">Loading weather for ${loc.name}…</div>`;
+    body.innerHTML = `<div class="weather-loading">Loading weather for ${dashboard.esc(loc.name)}…</div>`;
     try {
       const wx = await fetch(
         `https://api.open-meteo.com/v1/forecast` +

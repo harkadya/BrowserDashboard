@@ -60,7 +60,7 @@ dashboard.register({
       if (!response.results?.length) throw new Error('No articles found');
       body.innerHTML = this._html(response.results, section);
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${err.message}</div>` + this.render();
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
     }
   },
 
@@ -70,12 +70,12 @@ dashboard.register({
       : 'Top stories';
 
     const items = articles.map(a => {
-      const ago = this._ago(new Date(a.webPublicationDate));
+      const ago = dashboard.ago(new Date(a.webPublicationDate));
       const trail = a.fields?.trailText
         ? `<div class="news-trail">${dashboard.esc(a.fields.trailText.replace(/<[^>]+>/g, ''))}</div>`
         : '';
       return `
-        <a class="news-item" href="${a.webUrl}" target="_blank" rel="noopener">
+        <a class="news-item" href="${dashboard.url(a.webUrl)}" target="_blank" rel="noopener">
           <div class="news-meta">
             <span class="news-section">${dashboard.esc(a.sectionName)}</span>
             <span class="news-age">${ago}</span>
@@ -87,16 +87,9 @@ dashboard.register({
 
     return `
       <div class="news-header">
-        <span class="news-label">The Guardian · ${sectionLabel}</span>
+        <span class="news-label">The Guardian · ${dashboard.esc(sectionLabel)}</span>
         <button class="wx-change news-reset">Change</button>
       </div>
       <div class="news-grid">${items}</div>`;
-  },
-
-  _ago(date) {
-    const m = Math.floor((Date.now() - date) / 60000);
-    if (m < 60) return `${m}m ago`;
-    if (m < 1440) return `${Math.floor(m / 60)}h ago`;
-    return `${Math.floor(m / 1440)}d ago`;
   }
 });

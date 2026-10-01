@@ -24,10 +24,28 @@ const dashboard = {
   // Escapes text pulled from external APIs (HN/Reddit post titles, calendar
   // event summaries, etc.) before it's inserted via innerHTML — those are
   // attacker-controlled strings, not trusted markup.
+  // Quotes are escaped too, so the result is safe inside attribute values.
   esc(str) {
-    const div = document.createElement('div');
-    div.textContent = str ?? '';
-    return div.innerHTML;
+    return String(str ?? '').replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  },
+
+  // For href values from APIs: only http(s) passes, so a `javascript:` URL
+  // in a post can't run code when clicked. Returns an escaped string.
+  url(str) {
+    try {
+      const u = new URL(str);
+      return /^https?:$/.test(u.protocol) ? this.esc(u.href) : '#';
+    } catch { return '#'; }
+  },
+
+  // "5m ago" / "3h ago" / "2d ago"
+  ago(date) {
+    const m = Math.floor((Date.now() - date) / 60000);
+    if (m < 1)    return 'just now';
+    if (m < 60)   return `${m}m ago`;
+    if (m < 1440) return `${Math.floor(m / 60)}h ago`;
+    return `${Math.floor(m / 1440)}d ago`;
   },
 
   _applyAccent(idx) {
@@ -46,7 +64,7 @@ const dashboard = {
     const greetingEl = document.createElement('div');
     greetingEl.id = 'greeting';
     greetingEl.innerHTML = `
-      <span>${'Good ' + period + (name ? `, ${name}` : '')}</span>
+      <span>${'Good ' + period + (name ? `, ${this.esc(name)}` : '')}</span>
       <span id="header-clock"><span id="header-hm">--:--</span><span class="header-sec">:--</span></span>
     `;
     document.body.insertBefore(greetingEl, document.getElementById('dashboard'));

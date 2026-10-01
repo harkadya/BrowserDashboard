@@ -78,7 +78,7 @@ dashboard.register({
       this._events = this._parse(text);
       this._render();
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${err.message}</div>` + this.render();
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
     }
   },
 
