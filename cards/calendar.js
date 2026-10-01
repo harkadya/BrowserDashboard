@@ -1,7 +1,7 @@
 dashboard.register({
   id: 'calendar',
   title: 'Calendar',
-  className: 'card--wide',
+  className: 'card--wide card--tall',
 
   _events: [],
   _view: null,    // { year, month }
