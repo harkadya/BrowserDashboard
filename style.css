@@ -251,7 +251,14 @@ kbd {
 .settings-optional { font-weight: 400; color: var(--text-dim); }
 .settings-field-row { display: flex; gap: 10px; }
 .settings-field textarea { resize: vertical; font-size: 13px; line-height: 1.5; font-family: ui-monospace, Menlo, monospace; }
-.settings-field select { appearance: none; cursor: pointer; }
+.settings-field select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
 .settings-hint { font-size: 11px; color: var(--text-dim); text-align: center; }
 #settings-save { width: 100%; margin-top: 8px; }
 
