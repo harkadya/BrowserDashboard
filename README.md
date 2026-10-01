@@ -3,8 +3,18 @@
 A personal new-tab page you run locally. No build step, no frameworks —
 plain HTML/CSS/JS plus a small Python server for two proxy routes.
 
-Shows a greeting with a live clock, then cards for weather, your Google
-Calendar, news, Hacker News, and Reddit.
+Shows a greeting, date, live clock and a search bar, then cards for quick
+links, weather, your Google Calendar, a to-do list, Hacker News, Reddit and
+The Guardian.
+
+**Highlights**
+
+- Instant paint — each card shows its last data immediately and refreshes in the background
+- Dark, light, or follow-the-OS theme, plus seven accent colors
+- Weather with a 12-hour temperature sparkline, sunrise/sunset, rain chance, °C/°F
+- Calendar badges for what's on **Now** and what starts "in 25m"
+- Hacker News Top / Ask / Show tabs
+- Keyboard: <kbd>/</kbd> search · <kbd>,</kbd> settings · <kbd>Esc</kbd> close
 
 ## Requirements
 
@@ -31,20 +41,31 @@ devices on your network.
 
 ## Setting up each card
 
-Click the gear icon (top right) to open settings, or use each card's own
-setup form on first load.
+Click the gear icon (top right, or press <kbd>,</kbd>) to open settings, or
+use each card's own setup form on first load.
 
 | Card | What to configure |
 |---|---|
-| Weather | Enter a city — saved automatically |
+| Quick links | Settings → one `Name \| url` per line; clear to hide the row |
+| Weather | Enter a city — saved automatically; °C/°F in settings |
 | Calendar | Google Calendar → Settings → your calendar → Integrate calendar → "Secret address in iCal format" |
 | News | Free API key from [open.platform.theguardian.com](https://open.platform.theguardian.com) |
+| To do | Nothing — type a task and press Enter |
 | Hacker News | Nothing — loads automatically |
 | Reddit | Defaults to r/popular — use "Change" to switch subreddits |
 
-All config (API keys, calendar URL, subreddit, your name) is stored in the
+Theme, accent and search engine (Google, DuckDuckGo, Kagi, Bing) are in
+settings too.
+
+All config (API keys, calendar URL, subreddit, your name, to-dos) is stored in the
 browser's `localStorage` only — nothing is sent anywhere except the API
 providers themselves and your own local server.
+
+## Tests
+
+```sh
+node tests.js   # no deps — checks escaping, ICS parsing, link parsing
+```
 
 ## Adding a card
 
