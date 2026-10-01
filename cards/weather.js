@@ -99,7 +99,7 @@ dashboard.register({
           `https://api.open-meteo.com/v1/forecast` +
           `?latitude=${loc.lat}&longitude=${loc.lon}` +
           `&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m,relative_humidity_2m,is_day` +
-          `&hourly=temperature_2m,weathercode,precipitation_probability&forecast_hours=12` +
+          `&hourly=temperature_2m,weathercode,precipitation_probability,is_day&forecast_hours=12` +
           `&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,precipitation_probability_max` +
           (f ? `&temperature_unit=fahrenheit&windspeed_unit=mph` : '') +
           `&timezone=auto&forecast_days=7`),
@@ -112,7 +112,7 @@ dashboard.register({
   // Clear/mainly-clear at night shows a moon instead of a sun.
   _icon(code, isDay = 1) {
     const [desc, icon] = WMO[code] ?? ['Unknown', '❓'];
-    return [desc, !isDay && code <= 1 ? '🌙' : icon];
+    return [desc, !isDay && code <= 2 ? (code === 2 ? '☁️' : '🌙') : icon];
   },
 
   // 12-hour strip with a temperature sparkline drawn over it.
@@ -123,7 +123,7 @@ dashboard.register({
     const cells = h.time.map((time, i) => `
       <div class="hr-cell">
         <div class="hr-temp">${Math.round(t[i])}°</div>
-        <div class="hr-icon">${this._icon(h.weathercode[i], 1)[1]}</div>
+        <div class="hr-icon">${this._icon(h.weathercode[i], h.is_day?.[i] ?? 1)[1]}</div>
         <div class="hr-pop">${h.precipitation_probability[i] >= 20 ? h.precipitation_probability[i] + '%' : ''}</div>
         <div class="hr-time">${i === 0 ? 'Now' : time.slice(11, 13)}</div>
       </div>`).join('');
