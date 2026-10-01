@@ -16,7 +16,7 @@ GET /proxy/reddit?sub=<subreddit>
     Python's urllib and returns 403; curl's TLS stack passes).
     Parses the Atom XML and returns a clean JSON array.
 """
-import http.server, urllib.request, urllib.parse, os, sys, subprocess, json
+import http.server, urllib.request, urllib.error, urllib.parse, os, sys, subprocess, json
 import xml.etree.ElementTree as ET
 
 PORT = 8080
@@ -81,6 +81,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', 'http://localhost:8080')
                 self.end_headers()
                 self.wfile.write(data)
+            except urllib.error.HTTPError as e:
+                self.send_error(e.code)  # pass Google's status through (404 = URL reset/invalid)
             except Exception as e:
                 self.send_error(502, str(e))
 

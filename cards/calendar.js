@@ -83,6 +83,8 @@ dashboard.register({
         async () => {
           const res = await fetch(`/proxy/ics?url=${encodeURIComponent(icsUrl)}`)
             .catch(() => { throw new Error('Local server not reachable — start ./serve.sh'); });
+          if (res.status === 404 || res.status === 403)
+            throw new Error('Google says this calendar URL doesn\'t exist — the secret address may have been reset. Paste the current one.');
           if (!res.ok) throw new Error(`Could not fetch calendar (HTTP ${res.status})`);
           const text = await res.text();
           if (!text.includes('BEGIN:VCALENDAR'))
