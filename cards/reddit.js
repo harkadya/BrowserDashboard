@@ -41,16 +41,19 @@ dashboard.register({
 
   async _load(sub) {
     const body = document.getElementById('card-body-reddit');
-    body.innerHTML = `<div class="weather-loading">Loading r/${dashboard.esc(sub)}…</div>`;
+    body.innerHTML = dashboard.skeleton(6);
     try {
-      const res = await fetch(`/proxy/reddit?sub=${encodeURIComponent(sub)}`);
-      if (res.status === 404) throw new Error(`r/${sub} not found`);
-      if (!res.ok) throw new Error(`Reddit error ${res.status}`);
-      const posts = await res.json();
-      if (!posts.length) throw new Error(`r/${sub} appears empty or private`);
-      body.innerHTML = this._html(sub, posts);
+      await dashboard.cached(`reddit-${sub.toLowerCase()}`, 10 * 60 * 1000,
+        async () => {
+          const posts = await dashboard.fetchJSON(`/proxy/reddit?sub=${encodeURIComponent(sub)}`);
+          if (!posts.length) throw new Error(`r/${sub} appears empty or private`);
+          return posts;
+        },
+        posts => body.innerHTML = this._html(sub, posts));
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
+      const msg = err.status === 404 ? `r/${sub} not found`
+                : err.status ? `Reddit error ${err.status} — is the server running?` : err.message;
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(msg)}</div>` + this.render();
     }
   },
 

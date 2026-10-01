@@ -48,19 +48,24 @@ dashboard.register({
 
   async _load(key, section) {
     const body = document.getElementById('card-body-news');
+    body.innerHTML = dashboard.skeleton(4);
     const base = section
       ? `https://content.guardianapis.com/${encodeURIComponent(section)}`
       : 'https://content.guardianapis.com/search';
-    const url = `${base}?api-key=${key}&show-fields=trailText&order-by=newest&page-size=12`;
+    const url = `${base}?api-key=${encodeURIComponent(key)}&show-fields=trailText,thumbnail&order-by=newest&page-size=12`;
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(res.status === 401 ? 'Invalid API key' : `Guardian API error ${res.status}`);
-      const { response } = await res.json();
-      if (!response.results?.length) throw new Error('No articles found');
-      body.innerHTML = this._html(response.results, section);
+      await dashboard.cached(`news-${section || 'top'}`, 15 * 60 * 1000,
+        async () => {
+          const { response } = await dashboard.fetchJSON(url);
+          if (!response.results?.length) throw new Error('No articles found');
+          return response.results;
+        },
+        results => body.innerHTML = this._html(results, section));
     } catch (err) {
-      body.innerHTML = `<div class="weather-error">${dashboard.esc(err.message)}</div>` + this.render();
+      const msg = err.status === 401 ? 'Invalid API key'
+                : err.status ? `Guardian API error ${err.status}` : err.message;
+      body.innerHTML = `<div class="weather-error">${dashboard.esc(msg)}</div>` + this.render();
     }
   },
 
